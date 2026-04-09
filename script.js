@@ -17,7 +17,6 @@ window.addEventListener('scroll', () => {
     let current = '';
     sections.forEach(section => {
         const sectionTop = section.offsetTop;
-        const sectionHeight = section.clientHeight;
         if (pageYOffset >= sectionTop - 150) {
             current = section.getAttribute('id');
         }
@@ -34,8 +33,6 @@ window.addEventListener('scroll', () => {
 // Hamburger Menu Toggle
 hamburger.addEventListener('click', () => {
     navLinks.classList.toggle('active');
-
-    // Toggle icon
     const icon = hamburger.querySelector('i');
     if (navLinks.classList.contains('active')) {
         icon.classList.remove('fa-bars');
@@ -58,7 +55,6 @@ navItems.forEach(item => {
 
 // Scroll Reveal Animation (Intersection Observer)
 const revealElements = document.querySelectorAll('.fade-in');
-
 const revealOptions = {
     threshold: 0.15,
     rootMargin: "0px 0px -50px 0px"
@@ -66,12 +62,9 @@ const revealOptions = {
 
 const revealObserver = new IntersectionObserver(function (entries, observer) {
     entries.forEach(entry => {
-        if (!entry.isIntersecting) {
-            return;
-        } else {
-            entry.target.classList.add('appear');
-            observer.unobserve(entry.target);
-        }
+        if (!entry.isIntersecting) return;
+        entry.target.classList.add('appear');
+        observer.unobserve(entry.target);
     });
 }, revealOptions);
 
@@ -79,107 +72,156 @@ revealElements.forEach(el => {
     revealObserver.observe(el);
 });
 
-// Form Submission (Prevent Default for demo)
-const contactForm = document.getElementById('contactForm');
-if (contactForm) {
-    contactForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const btn = contactForm.querySelector('button');
-        const originalText = btn.innerHTML;
+// Custom Cursor Logic
+const dot = document.querySelector('.cursor-dot');
+const outline = document.querySelector('.cursor-outline');
 
-        btn.innerHTML = 'Terkirim <i class="fas fa-check"></i>';
-        btn.style.background = 'linear-gradient(45deg, #10b981, #059669)';
+if (dot && outline) {
+    window.addEventListener('mousemove', function (e) {
+        // Dot follows exactly
+        dot.style.left = e.clientX + 'px';
+        dot.style.top = e.clientY + 'px';
 
-        setTimeout(() => {
-            btn.innerHTML = originalText;
-            btn.style.background = '';
-            contactForm.reset();
-        }, 3000);
+        // Outline trails slightly via delay animation
+        outline.style.left = e.clientX + 'px';
+        outline.style.top = e.clientY + 'px';
+    });
+
+    // Hover effect on links and buttons
+    const interactables = document.querySelectorAll('a, button, input, textarea');
+    interactables.forEach(el => {
+        el.addEventListener('mouseenter', () => {
+            outline.style.transform = 'translate(-50%, -50%) scale(1.5)';
+            outline.style.backgroundColor = 'rgba(37, 99, 235, 0.1)';
+            dot.style.transform = 'translate(-50%, -50%) scale(1.5)';
+        });
+        el.addEventListener('mouseleave', () => {
+            outline.style.transform = 'translate(-50%, -50%) scale(1)';
+            outline.style.backgroundColor = 'transparent';
+            dot.style.transform = 'translate(-50%, -50%) scale(1)';
+        });
     });
 }
 
-// Sparkle Effect on Cursor Click
-document.addEventListener('click', function (e) {
-    createSparkle(e.clientX, e.clientY);
-});
+// 3D Card Parallax Tilt Logic
+const cardWrap = document.getElementById('card3d');
 
-function createSparkle(x, y) {
-    const sparkle = document.createElement('div');
-    sparkle.style.position = 'fixed';
-    sparkle.style.left = x + 'px';
-    sparkle.style.top = y + 'px';
-    sparkle.style.width = '10px';
-    sparkle.style.height = '10px';
-    sparkle.style.borderRadius = '50%';
-    sparkle.style.background = 'white';
-    sparkle.style.boxShadow = '0 0 10px 2px rgba(255, 255, 255, 0.8)';
-    sparkle.style.pointerEvents = 'none';
-    sparkle.style.zIndex = '9999';
-    sparkle.style.transform = 'translate(-50%, -50%) scale(1)';
-    sparkle.style.transition = 'all 0.5s ease-out';
+if (cardWrap) {
+    cardWrap.addEventListener('mousemove', (e) => {
+        // Get dimensions of container
+        const rect = cardWrap.getBoundingClientRect();
+        const width = rect.width;
+        const height = rect.height;
 
-    document.body.appendChild(sparkle);
+        // Mouse position relative to container
+        const mouseX = e.clientX - rect.left;
+        const mouseY = e.clientY - rect.top;
 
-    setTimeout(() => {
-        sparkle.style.transform = 'translate(-50%, -50%) scale(2)';
-        sparkle.style.opacity = '0';
-    }, 10);
+        // Calculate rotation based on cursor position (-15 to 15 degrees)
+        const rotateY = ((mouseX / width) - 0.5) * 30; // 30 deg sweep
+        // Correcting rotateX (pushing into page when above center)
+        const rotateX = ((mouseY / height) - 0.5) * -30; // -30 deg sweep
 
-    setTimeout(() => {
-        sparkle.remove();
-    }, 500);
+        // Apply to the wrap itself so that inner flip stays intact
+        cardWrap.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+    });
+
+    cardWrap.addEventListener('mouseleave', () => {
+        // Reset transform on leave with smooth transition
+        cardWrap.style.transform = `perspective(1000px) rotateX(0deg) rotateY(0deg)`;
+        cardWrap.style.transition = 'transform 0.5s ease-out';
+        setTimeout(() => {
+            cardWrap.style.transition = 'transform 0.1s ease-out';
+        }, 500);
+    });
 }
 
+// Whatsapp Form Submission
+const contactForm = document.getElementById('contactForm');
+if (contactForm) {
+    contactForm.addEventListener('submit', function (e) {
+        e.preventDefault();
+        const nama = document.getElementById('name').value;
+        const email = document.getElementById('email').value;
+        const pesan = document.getElementById('message').value;
 
-// document.getElementById('contactForm').addEventListener('submit', function (e) {
-// 1. Mencegah halaman reload saat tombol diklik
-// e.preventDefault();
+        const nomorWA = "6289517354572";
+        const teks = `Halo Hifzhi, ada pesan baru dari website: MyPortofolio\n\nNama: ${nama}\nEmail: ${email}\nPesan: ${pesan}`;
+        const url = "https://wa.me/" + nomorWA + "?text=" + encodeURIComponent(teks);
 
-// 2. Ambil data dari input form berdasarkan ID
-// const nama = document.getElementById('name').value;
-// const email = document.getElementById('email').value;
-// const pesan = document.getElementById('message').value;
+        window.open(url, '_blank');
 
-// 3. Masukkan nomor WhatsApp Anda (Gunakan format internasional tanpa +)
-// const nomorWA = "6289517354572"; // GANTINOMOR INI
+        alert("Pesan Anda akan diarahkan ke WhatsApp 🚀");
+        this.reset();
+    });
+}
 
-// 4. Susun pesan (Gunakan %0A untuk baris baru agar rapi)
-// const teksPesan = "Halo Hifzhi, ada pesan baru dari website : MyPortofolio\n\n" +
-//     "*Nama:* " + encodeURIComponent(nama) + "\n" +
-//     "*Email:* " + encodeURIComponent(email) + "\n" +
-//     "*Pesan:* " + encodeURIComponent(pesan);
+// Comments Form & LocalStorage Logic
+const commentForm = document.getElementById('commentForm');
+const commentsList = document.getElementById('commentsList');
+const countDisplay = document.getElementById('countDisplay');
 
-// 5. Buat URL WhatsApp
-// const urlWA = "https://wa.me/" + nomorWA + "?text=" + teksPesan;
+// Retrieve existing comments from storage
+let commentsArr = JSON.parse(localStorage.getItem('portofolio_comments')) || [];
 
-// 6. Buka di tab baru
-// window.open(urlWA, '_blank');
+function renderComments() {
+    if (!commentsList) return;
+    commentsList.innerHTML = ''; // Clear list
 
-// Opsional: Reset form setelah kirim
-// this.reset();
+    if (commentsArr.length === 0) {
+        commentsList.innerHTML = '<p style="color: #475569; font-style: italic;">Belum ada komentar. Jadilah yang pertama!</p>';
+    }
 
-// alert("Pesan akan diarahkan ke WhatsApp 🚀");
-// });
+    // Render from newest to oldest
+    const displayArr = [...commentsArr].reverse();
+    
+    displayArr.forEach(comment => {
+        const item = document.createElement('div');
+        item.className = 'comment-item';
+        
+        item.innerHTML = `
+            <div class="comment-header">
+                <span class="comment-name">@${comment.name}</span>
+                <span class="comment-date">${comment.date}</span>
+            </div>
+            <div class="comment-body">
+                ${comment.text}
+            </div>
+        `;
+        commentsList.appendChild(item);
+    });
 
-document.getElementById('contactForm').addEventListener('submit', function (e) {
-    e.preventDefault();
+    if (countDisplay) {
+        countDisplay.textContent = commentsArr.length;
+    }
+}
 
-    const nama = document.getElementById('name').value;
-    const email = document.getElementById('email').value;
-    const pesan = document.getElementById('message').value;
+// Run render initial
+renderComments();
 
-    const nomorWA = "6289517354572";
+if (commentForm) {
+    commentForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const nameInput = document.getElementById('commentName').value.trim();
+        const textInput = document.getElementById('commentText').value.trim();
 
-    const teks =
-        `Halo Hifzhi, ada pesan baru dari website: MyPortofolio
+        if (textInput !== "") {
+            const finalName = nameInput === "" ? "Anonim" : nameInput;
+            const dateStr = new Date().toLocaleDateString('id-ID', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
 
-Nama: ${nama}
-Email: ${email}
-Pesan: ${pesan}`;
+            const newComment = {
+                name: finalName.replace(/</g, "&lt;"), // basic sanitize
+                text: textInput.replace(/</g, "&lt;"),
+                date: dateStr
+            };
 
-    const url = "https://wa.me/" + nomorWA + "?text=" + encodeURIComponent(teks);
-
-    window.open(url, '_blank');
-
-    alert("Pesan akan diarahkan ke WhatsApp 🚀");
-});
+            commentsArr.push(newComment);
+            localStorage.setItem('portofolio_comments', JSON.stringify(commentsArr));
+            
+            renderComments();
+            // Optional: Scroll to list to see new comment
+            commentsList.scrollTop = 0; 
+            commentForm.reset();
+        }
+    });
+}
